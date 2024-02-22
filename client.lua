@@ -1,5 +1,6 @@
 local seatSideAngle = 30
 local bet = 0
+local bet_text = "0"
 local hand = {}
 local splitHand = {}
 local timeLeft = 0
@@ -48,6 +49,19 @@ local selectedBet = 1
 		-- end
 	end)
 --]===]
+
+---i.e 1000000000 -> 1,000,000,000
+---@param num number
+function CommaValue(num)
+	local k
+
+    while true do
+        num, k = string.gsub(num, "^(-?%d+)(%d%d%d)", '%1' .. ',' .. '%2')
+        if k == 0 then break end
+    end
+
+	return num
+end
 
 local function SetSatDownCallback(cb)
 	satDownCallback = cb
@@ -252,7 +266,7 @@ Citizen.CreateThread(function()
 		end
 
 		if renderBet == true then
-			DrawTimerBar(barCount, "BET", bet)
+			DrawTimerBar(barCount, "BET", bet_text)
 		end
 
 		if renderHand == true then
@@ -851,6 +865,8 @@ AddEventHandler("BLACKJACK:RequestBets", function(index, _timeLeft)
 				bet = bet * 10
 			end
 		
+			bet_text = CommaValue(bet)
+
 			if IsControlJustPressed(1, 201) then -- ENTER / A
 				
 				TriggerServerEvent("BLACKJACK:CheckPlayerBet", g_seat, bet)
