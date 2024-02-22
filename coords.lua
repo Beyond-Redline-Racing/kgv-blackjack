@@ -7,6 +7,8 @@ function DebugPrint(str)
 	end
 end
 
+ChackCardPropAnim = true -- maybe player can cheat and see card when checking card
+
 CreateThread(function()
 	while true do Wait(0)
 		_DEBUG = GlobalState.debug
