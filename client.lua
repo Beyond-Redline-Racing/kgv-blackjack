@@ -375,6 +375,14 @@ Citizen.CreateThread(function()
 	end
 end)
 
+function CheckGender(dealerPed)
+	local models = {
+		[`s_f_y_casino_01`] = "",
+		[`s_m_y_casino_01`] = "female_"
+	}
+	return models[GetEntityModel(dealerPed)]
+end
+
 function IsSeatOccupied(coords, radius)
 	local players = GetActivePlayers()
 	local playerId = PlayerId()
@@ -520,6 +528,8 @@ end)
 RegisterNetEvent("BLACKJACK:PlayDealerAnim")
 AddEventHandler("BLACKJACK:PlayDealerAnim", function(i, animDict, anim)
 	Citizen.CreateThread(function()
+		local Gender = CheckGender(spawnedPeds[i])
+		if Gender ~= "" then anim = string.gsub(anim, Gender,"") end
 	
 		local v = tables[i]
 		
@@ -559,7 +569,27 @@ end)
 
 RegisterNetEvent("BLACKJACK:DealerTurnOverCard")
 AddEventHandler("BLACKJACK:DealerTurnOverCard", function(i)
-	SetEntityRotation(dealerHandObjs[i][1], 0.0, 0.0, tables[i].coords.w + cardRotationOffsetsDealer[1].z)
+    local cardX,cardY,cardZ = GetEntityCoords(dealerHandObjs[i][1])
+    AttachEntityToEntity(dealerHandObjs[i][1], spawnedPeds[i], GetPedBoneIndex(spawnedPeds[i],28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 2, 1)
+	
+    while not HasAnimEventFired(spawnedPeds[i],585557868) do
+        Wait(0)
+    end
+    DetachEntity(dealerHandObjs[i][1],false,true)
+    SetEntityCoordsNoOffset(dealerHandObjs[i][1], cardX,cardY,cardZ)
+    SetEntityRotation(dealerHandObjs[i][1], 0.0, 0.0, tables[i].coords.w + cardRotationOffsetsDealer[1].z)
+end)
+
+RegisterNetEvent("BLACKJACK:DealerCheckCard")
+AddEventHandler("BLACKJACK:DealerCheckCard", function(i)
+    local cardX,cardY,cardZ = GetEntityCoords(dealerHandObjs[i][1])
+    AttachEntityToEntity(dealerHandObjs[i][1], spawnedPeds[i], GetPedBoneIndex(spawnedPeds[i],28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 2, 1)
+	while not HasAnimEventFired(spawnedPeds[i],585557868) do
+        Wait(0)
+    end
+    Wait(100)
+    DetachEntity(dealerHandObjs[i][1],false,true)
+    SetEntityCoordsNoOffset(dealerHandObjs[i][1], cardX,cardY,cardZ)
 end)
 
 RegisterNetEvent("BLACKJACK:SplitHand")
@@ -571,7 +601,7 @@ AddEventHandler("BLACKJACK:SplitHand", function(index, seat, splitHandSize, _han
 	DebugPrint("split card coord = "..tostring(GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, cardSplitOffsets[seat][1])))
 	
 	SetEntityCoordsNoOffset(handObjs[index][seat][#handObjs[index][seat]], GetObjectOffsetFromCoords(tables[index].coords.x, tables[index].coords.y, tables[index].coords.z, tables[index].coords.w, cardSplitOffsets[5-seat][1]))
-	SetEntityRotation(handObjs[index][seat][#handObjs[index][seat]], 0.0, 0.0, cardSplitRotationOffsets[seat][splitHandSize])
+	-- SetEntityRotation(handObjs[index][seat][#handObjs[index][seat]], 0.0, 0.0, cardSplitRotationOffsets[seat][splitHandSize])
 end)
 
 selectedBet = 1
@@ -1235,6 +1265,37 @@ end)
 RegisterNetEvent("BLACKJACK:UpdateDealerHand")
 AddEventHandler("BLACKJACK:UpdateDealerHand", function(i, v)
 	dealerValue[i] = v
+end)
+
+RegisterNetEvent("BLACKJACK:RetrieveCardsWithAnim")
+AddEventHandler("BLACKJACK:RetrieveCardsWithAnim", function(i, seat)
+	DebugPrint("TABLE "..i..": DELETE SEAT ".. seat .." CARDS")
+
+	if seat == 0 then
+		for x,v in pairs(dealerHandObjs[i]) do
+			AttachEntityToEntity(v, spawnedPeds[i], GetPedBoneIndex(spawnedPeds[i],28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 2, 1)
+		end
+		while not HasAnimEventFired(spawnedPeds[i],585557868) do
+			Wait(0)
+		end
+		for x,v in pairs(dealerHandObjs[i]) do
+			DeleteEntity(v)
+			dealerHandObjs[i][x] = nil
+		end
+	else
+		for x,v in pairs(handObjs[i][seat]) do
+			AttachEntityToEntity(v, spawnedPeds[i], GetPedBoneIndex(spawnedPeds[i],28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 1, 2, 1)
+		end
+		while not HasAnimEventFired(spawnedPeds[i],585557868) do
+			Wait(0)
+		end
+		for x,v in pairs(handObjs[i][seat]) do
+			DeleteEntity(v)
+		end
+		for x,v in pairs(chips[i][5-seat]) do
+			DeleteEntity(v)
+		end
+	end
 end)
 	
 RegisterNetEvent("BLACKJACK:GiveCard")
