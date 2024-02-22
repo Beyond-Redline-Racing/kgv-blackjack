@@ -18,11 +18,11 @@ end)
 tables = {
 	{
 		coords = vector4(1148.837, 269.747, -52.8409, -134.69),
-		highStakes = false
+		highStakes = true
 	},
 	{
 		coords = vector4(1151.84, 266.747, -52.8409, 45.31),
-		highStakes = false
+		highStakes = true
 	},
 	{
 		coords = vector4(1129.406, 262.3578, -52.041, 135.31),
@@ -43,22 +43,33 @@ tables = {
 --]]
 
 customTables = {
-    {
-        coords = vector4(152.11915588379,-981.68530273438,29.091926574707,292.24224853516),
-		highStakes = false,
-		color = 0,
-    },
-    {
-        coords = vector4(150.28746032715,-976.88409423828,29.091924667358,286.94821166992),
-		highStakes = true,
-		color = 3,
-    },
-    {
+	{
 		coords = vector4(967.33, 32.0191, 115.1742, -122.0),
 		highStakes = true,
+		color = 3,
+	},
+	{
+		coords = vector4(1129.811, 267.063, -52.031, 38.148),
+		highStakes = true,
+		color = 2,
+	},
+	{
+		coords = vector4(1149.415, 248.093, -52.031, 250.936),
+		highStakes = true,
 		color = 1,
-    },
+	},
+	{
+		coords = vector4(1143.875, 251.121, -52.031, 73.449),
+		highStakes = true,
+		color = 2,
+	},
+	{
+		coords = vector4(1133.165, 261.734, -52.031, 193.487),
+		highStakes = true,
+		color = 3,
+	},
 }
+
 
 TableModels = {
 	`vw_prop_casino_blckjack_01`,
@@ -464,94 +475,24 @@ pileRotationOffsets = { -- doesnt have to be vector3
 	}
 }
 
-lowTableLimit = 40
+lowTableLimit = 11
 bettingNums = {
-	10,
-	20,
-	30,
-	40,
-	50,
-	60,
-	70,
-	80,
-	90,
-	100,
-	150,
-	200,
-	250,
-	300,
-	350,
-	400,
-	450,
-	500,
-	1000,
-	1500,
-	2000,
-	2500,
-	3000,
-	3500,
-	4000,
-	4500,
-	5000,
-	6000,
-	7000,
-	8000,
-	9000,
-	10000,
-	15000,
-	20000,
 	25000,
-	30000,
-	35000,
-	40000,
-	45000,
-	50000, -- 40 Low table limit, betting numbers added after this will be high stakes only
-	55000,
-	60000,
-	65000,
-	70000,
+	50000,
 	75000,
-	80000,
-	85000,
-	90000,
-	95000,
 	100000,
 	150000,
 	200000,
 	250000,
 	300000,
 	350000,
-	400000,
 	450000,
 	500000,
-	550000,
 	600000,
-	650000,
 	700000,
-	750000,
 	800000,
-	850000,
 	900000,
-	950000,
 	1000000,
-	1500000,
-	2000000,
-	2500000,
-	3000000,
-	3500000,
-	4000000,
-	4500000,
-	5000000,
-	5500000,
-	6000000,
-	6500000,
-	7000000,
-	7500000,
-	8000000,
-	8500000,
-	9000000,
-	9500000,
-	10000000,
 }
 
 bettingTime = 50
@@ -582,37 +523,42 @@ moveTime = 30
 
 --]]
 
+local offset = 8 -- dont make it %% 5
+
 chipModels = {
-	[10] = "vw_prop_chip_10dollar_x1",
-	[50] = "vw_prop_chip_50dollar_x1",
-	[100] = "vw_prop_chip_100dollar_x1",
-	[120] = "vw_prop_chip_10dollar_st",
-	[500] = "vw_prop_chip_500dollar_x1",
-	[600] = "vw_prop_chip_50dollar_st",
-	[1000] = "vw_prop_chip_1kdollar_x1",
-	[1200] = "vw_prop_chip_100dollar_st",
-	[5000] = "vw_prop_chip_5kdollar_x1",
-	[6000] = "vw_prop_chip_500dollar_st",
-	[10000] = "vw_prop_chip_10kdollar_x1",
-	[60000] = "vw_prop_chip_5kdollar_st",
-	[120000] = "vw_prop_chip_10kdollar_st",
+	[10000 / 10] = "vw_prop_chip_10dollar_x1",
+	[10000 / 10 * offset] = "vw_prop_chip_10dollar_st",
+	[50000 / 10] = "vw_prop_chip_50dollar_x1",
+	[50000 / 10 * offset] = "vw_prop_chip_50dollar_st",
+	[100000 / 10] = "vw_prop_chip_100dollar_x1",
+	[100000 / 10 * offset] = "vw_prop_chip_100dollar_st",
+	[500000 / 10] = "vw_prop_chip_500dollar_x1",
+	[500000 / 10 * offset] = "vw_prop_chip_500dollar_st",
+	[1000000 / 10] = "vw_prop_chip_1kdollar_x1",
+	[1000000 / 10 * offset] = "vw_prop_chip_1kdollar_st",
+	[5000000 / 10] = "vw_prop_chip_5kdollar_x1",
+	[5000000 / 10 * offset] = "vw_prop_chip_5kdollar_st",
+	[10000000 / 10] = "vw_prop_chip_10kdollar_x1",
+	[10000000 / 10 * offset] = "vw_prop_chip_10kdollar_st",
 }
 
 chipValues = {
-	10,
-	50,
-	100,
-	120,
-	500,
-	600,
-	1000,
-	1200,
-	5000,
-	6000,
-	10000,
-	60000,
-	120000,
+	10000 / 10,
+	10000 / 10 * offset,
+	50000 / 10,
+	50000 / 10 * offset,
+	100000 / 10,
+	100000 / 10 * offset,
+	500000 / 10,
+	500000 / 10 * offset,
+	1000000 / 10,
+	1000000 / 10 * offset,
+	5000000 / 10,
+	5000000 / 10 * offset,
+	10000000 / 10,
+	10000000 / 10 * offset,
 }
+
 
 chipThickness = {
 	[`vw_prop_chip_10dollar_x1`] = 0.0054170000366867,

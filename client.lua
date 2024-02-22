@@ -169,7 +169,8 @@ end
 --]]
 
 local function getChips(amount)
-	if amount < 500000 then
+	-- I don't intend to use big numbers, so this can reverted in the future
+	if true or amount < 500000 then
 		local props = {}
 		local propTypes = {}
 
