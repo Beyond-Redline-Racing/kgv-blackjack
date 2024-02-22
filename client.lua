@@ -1,12 +1,25 @@
-seatSideAngle = 30
-bet = 0
-hand = {}
-splitHand = {}
-timeLeft = 0
-satDownCallback = nil
-standUpCallback = nil
-leaveCheckCallback = nil
-canSitDownCallback = nil
+local seatSideAngle = 30
+local bet = 0
+local hand = {}
+local splitHand = {}
+local timeLeft = 0
+local satDownCallback = nil
+local standUpCallback = nil
+local leaveCheckCallback = nil
+local canSitDownCallback = nil
+local dealerHand = {}
+local dealerValue = {}
+local dealerHandObjs = {}
+local handObjs = {}
+local spawnedPeds = {}
+local spawnedObjects = {}
+local renderScaleform = false
+local renderTime = false
+local renderBet = false
+local renderHand = false
+local upPressed = false
+local downPressed = false
+local selectedBet = 1
 
 --[===[
 	exports["kgv-blackjack"]:SetSatDownCallback(function()
@@ -36,23 +49,23 @@ canSitDownCallback = nil
 	end)
 --]===]
 
-function SetSatDownCallback(cb)
+local function SetSatDownCallback(cb)
 	satDownCallback = cb
 end
 
-function SetStandUpCallback(cb)
+local function SetStandUpCallback(cb)
 	standUpCallback = cb
 end
 
-function SetLeaveCheckCallback(cb)
+local function SetLeaveCheckCallback(cb)
 	leaveCheckCallback = cb
 end
 
-function SetCanSitDownCallback(cb)
+local function SetCanSitDownCallback(cb)
 	canSitDownCallback = cb
 end
 
-function Notification(text, color, blink)
+local function Notification(text, color, blink)
 	if color then ThefeedNextPostBackgroundColor(color) end
 	PlaySoundFrontend(-1, "OTHER_TEXT", "HUD_AWARDS", 0)
 	BeginTextCommandThefeedPost("STRING")
@@ -60,13 +73,13 @@ function Notification(text, color, blink)
 	EndTextCommandThefeedPostTicker(blink or false, false)
 end
 
-function DisplayHelpText(helpText, time)
+local function DisplayHelpText(helpText, time)
 	BeginTextCommandDisplayHelp("STRING")
 	AddTextComponentSubstringWebsite(helpText)
 	EndTextCommandDisplayHelp(0, 0, 1, time or -1)
 end
 
-function SetSubtitle(subtitle, duration)
+local function SetSubtitle(subtitle, duration)
     ClearPrints()
     BeginTextCommandPrint("STRING")
     AddTextComponentSubstringWebsite(subtitle)
@@ -80,12 +93,12 @@ end
 	-- return {x1, y1}
 -- end
 
-function findRotation( x1, y1, x2, y2 ) 
+local function findRotation( x1, y1, x2, y2 ) 
     local t = -math.deg( math.atan2( x2 - x1, y2 - y1 ) )
     return t < -180 and t + 180 or t
 end
 
-function cardValue(card)
+local function cardValue(card)
 	local rank = 10
 	for i=2,11 do
 		if string.find(card, tostring(i)) then
@@ -99,7 +112,7 @@ function cardValue(card)
 	return rank
 end
 
-function handValue(hand)
+local function handValue(hand)
 	local tmpValue = 0
 	local numAces = 0
 	
@@ -123,7 +136,7 @@ function handValue(hand)
 	return tmpValue
 end
 
-function CanSplitHand(hand)
+local function CanSplitHand(hand)
 	--if hand[1] and hand[2] and #hand == 2 then
 	if hand[1] and hand[2] then
 		if hand[1]:sub(-3) == hand[2]:sub(-3) and #hand == 2 then
@@ -141,7 +154,7 @@ end
 	vw_prop_vw_chips_pile_03a.ydr -- $1,990,000
 --]]
 
-function getChips(amount)
+local function getChips(amount)
 	if amount < 500000 then
 		local props = {}
 		local propTypes = {}
@@ -181,7 +194,7 @@ function getChips(amount)
 	end
 end
 
-function leaveBlackjack()
+local function leaveBlackjack()
 	atTable = false
 	leavingBlackjack = true
 	renderScaleform = false
@@ -193,7 +206,7 @@ function leaveBlackjack()
 	splitHand = {}
 end
 
-function s2m(s)
+local function s2m(s)
     if s <= 0 then
         return "00:00"
     else
@@ -208,9 +221,6 @@ end
 	-- end
 -- end, false)
 
-
-spawnedPeds = {}
-spawnedObjects = {}
 AddEventHandler("onResourceStop", function(r)
 	if r == GetCurrentResourceName() then
 		for i,v in ipairs(spawnedPeds) do
@@ -221,11 +231,6 @@ AddEventHandler("onResourceStop", function(r)
 		end
 	end
 end)
-
-renderScaleform = false
-renderTime = false
-renderBet = false 
-renderHand = false
 
 Citizen.CreateThread(function()
 
@@ -375,7 +380,7 @@ Citizen.CreateThread(function()
 	end
 end)
 
-function CheckGender(dealerPed)
+local function CheckGender(dealerPed)
 	local models = {
 		[`s_f_y_casino_01`] = "",
 		[`s_m_y_casino_01`] = "female_"
@@ -383,7 +388,7 @@ function CheckGender(dealerPed)
 	return models[GetEntityModel(dealerPed)]
 end
 
-function IsSeatOccupied(coords, radius)
+local function IsSeatOccupied(coords, radius)
 	local players = GetActivePlayers()
 	local playerId = PlayerId()
 	for i = 1, #players do
@@ -398,12 +403,7 @@ function IsSeatOccupied(coords, radius)
 	return false
 end
 
-dealerHand = {}
-dealerValue = {}
-dealerHandObjs = {}
-handObjs = {}
-
-function CreatePeds()
+local function CreatePeds()
 	if not HasAnimDictLoaded("anim_casino_b@amb@casino@games@blackjack@dealer") then
 		RequestAnimDict("anim_casino_b@amb@casino@games@blackjack@dealer")
 		repeat Wait(0) until HasAnimDictLoaded("anim_casino_b@amb@casino@games@blackjack@dealer")
@@ -604,8 +604,6 @@ AddEventHandler("BLACKJACK:SplitHand", function(index, seat, splitHandSize, _han
 	-- SetEntityRotation(handObjs[index][seat][#handObjs[index][seat]], 0.0, 0.0, cardSplitRotationOffsets[seat][splitHandSize])
 end)
 
-selectedBet = 1
-
 --[[
 	--Get chip offsets
 	Citizen.CreateThread(function()
@@ -751,9 +749,6 @@ AddEventHandler("BLACKJACK:PlaceBetChip", function(index, seat, bet, double, spl
 end)
 
 RegisterNetEvent("BLACKJACK:BetReceived")
-
-local upPressed = false
-local downPressed = false
 
 RegisterNetEvent("BLACKJACK:RequestBets")
 AddEventHandler("BLACKJACK:RequestBets", function(index, _timeLeft)
@@ -1297,7 +1292,7 @@ AddEventHandler("BLACKJACK:RetrieveCardsWithAnim", function(i, seat)
 		end
 	end
 end)
-	
+
 RegisterNetEvent("BLACKJACK:GiveCard")
 AddEventHandler("BLACKJACK:GiveCard", function(i, seat, handSize, card, flipped, split)
 	
@@ -1369,7 +1364,7 @@ AddEventHandler("BLACKJACK:GiveCard", function(i, seat, handSize, card, flipped,
 	-- DebugPrint(cardOffsets[5-seat][handSize])
 end)
 
-function ProcessTables()	
+local function ProcessTables()	
 	RequestAnimDict("anim_casino_b@amb@casino@games@shared@player@")
 	
 	while true do 

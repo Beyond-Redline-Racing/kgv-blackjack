@@ -1,7 +1,30 @@
-ranks = {'02', '03', '04', '05', '06', '07', '08', '09', '10', --[['11',]] 'JACK', 'QUEEN', 'KING', 'ACE'}
-suits = {'SPD', 'HRT', 'DIA', 'CLUB'}
+local ranks = {'02', '03', '04', '05', '06', '07', '08', '09', '10', --[['11',]] 'JACK', 'QUEEN', 'KING', 'ACE'}
+local suits = {'SPD', 'HRT', 'DIA', 'CLUB'}
+local players = {
+	-- [1] = { -- table
+		-- [1] = { -- player
+			-- player = source
+			-- seat = 1
+			-- hand = {},
+			-- splitHand = {}
+			-- player_in = true,
+			-- bet = 1500,
+		-- }
+	-- },
+	-- [2] = {},
+	-- [3] = {},
+	-- [4] = {},
+}
+local timeTracker = {}
+local tableTracker = {
+	-- ["2"] = 1,
+}
 
-function shuffle(tbl)
+local getChipsCallback = nil
+local takeChipsCallback = nil
+local giveChipsCallback = nil
+
+local function shuffle(tbl)
 	for i = #tbl, 2, -1 do
 		local j = math.random(i)
 		tbl[i], tbl[j] = tbl[j], tbl[i]
@@ -16,7 +39,7 @@ function shuffle(tbl)
   return tbl
 end
 
-function getDeck()
+local function getDeck()
 	local tDeck = {}
 	for _,rank in pairs(ranks) do
 		for _,suit in pairs(suits) do
@@ -26,14 +49,14 @@ function getDeck()
 	return shuffle(tDeck)
 end
 
-function takeCard(tDeck)
+local function takeCard(tDeck)
 	--local card_pick = math.random(1,#tDeck)
 	--DebugPrint(card_pick)
 
 	return table.remove(tDeck, 1)
 end
 
-function cardValue(card)
+local function cardValue(card)
 	local rank = 10
 	for i=2,11 do
 		if string.find(card, tostring(i)) then
@@ -47,7 +70,7 @@ function cardValue(card)
 	return rank
 end
 
-function handValue(hand)
+local function handValue(hand)
 	local tmpValue = 0
 	local numAces = 0
 
@@ -71,26 +94,6 @@ function handValue(hand)
 	return tmpValue
 end
 
-players = {
-	-- [1] = { -- table
-		-- [1] = { -- player
-			-- player = source
-			-- seat = 1
-			-- hand = {},
-			-- splitHand = {}
-			-- player_in = true,
-			-- bet = 1500,
-		-- }
-	-- },
-	-- [2] = {},
-	-- [3] = {},
-	-- [4] = {},
-}
-timeTracker = {}
-
-tableTracker = {
-	-- ["2"] = 1,
-}
 
 --[===[
 	exports["kgv-blackjack"]:SetGetChipsCallback(function(source)
@@ -106,11 +109,7 @@ tableTracker = {
 	end)
 --]===]
 
-getChipsCallback = nil
-takeChipsCallback = nil
-giveChipsCallback = nil
-
-function FindPlayerIdx(tbl, src)
+local function FindPlayerIdx(tbl, src)
 
 	for i = 1, #tbl do
 		if tbl[i].player == src then
@@ -121,33 +120,33 @@ function FindPlayerIdx(tbl, src)
 	return nil
 end
 
-function SetGetChipsCallback(cb)
+local function SetGetChipsCallback(cb)
 	getChipsCallback = cb
 end
 
-function SetTakeChipsCallback(cb)
+local function SetTakeChipsCallback(cb)
 	takeChipsCallback = cb
 end
 
-function SetGiveChipsCallback(cb)
+local function SetGiveChipsCallback(cb)
 	giveChipsCallback = cb
 end
 
-function GiveMoney(player, money)
+local function GiveMoney(player, money)
 	if giveChipsCallback ~= nil then
 		giveChipsCallback(player, math.tointeger(money))
 	end
 	-- DebugPrint("MONEY: GIVE "..GetPlayerName(player):upper().." "..money)
 end
 
-function TakeMoney(player, money)
+local function TakeMoney(player, money)
 	if takeChipsCallback ~= nil then
 		takeChipsCallback(player, math.tointeger(money))
 	end
 	-- DebugPrint("MONEY: TAKE "..GetPlayerName(player):upper().." "..money)
 end
 
-function HaveAllPlayersBetted(table)
+local function HaveAllPlayersBetted(table)
 	for i,v in pairs(table) do
 		if v.bet < 1 then
 			return false
@@ -156,7 +155,7 @@ function HaveAllPlayersBetted(table)
 	return true
 end
 
-function ArePlayersStillIn(table)
+local function ArePlayersStillIn(table)
 	for i,v in pairs(table) do
 		if v.player_in == true then
 			return true
@@ -165,15 +164,15 @@ function ArePlayersStillIn(table)
 	return false
 end
 
-function PlayDealerAnim(dealer, animDict, anim)
+local function PlayDealerAnim(dealer, animDict, anim)
 	TriggerClientEvent("BLACKJACK:PlayDealerAnim", -1, dealer, animDict, anim)
 end
 
-function PlayDealerSpeech(dealer, speech)
+local function PlayDealerSpeech(dealer, speech)
 	TriggerClientEvent("BLACKJACK:PlayDealerSpeech", -1, dealer, speech)
 end
 
-function SetPlayerBet(i, seat, bet, betId, double, split)
+local function SetPlayerBet(i, seat, bet, betId, double, split)
 	split = split or false
 	double = double or false
 
@@ -196,7 +195,7 @@ end
 RegisterServerEvent("BLACKJACK:SetPlayerBet")
 AddEventHandler('BLACKJACK:SetPlayerBet', SetPlayerBet)
 
-function CheckPlayerBet(i, bet)
+local function CheckPlayerBet(i, bet)
 	DebugPrint("TABLE "..i..": CHECKING "..GetPlayerName(source):upper().."'s CHIPS")
 
 	local playerChips = 0 -- Get money
@@ -219,7 +218,7 @@ end
 RegisterServerEvent("BLACKJACK:CheckPlayerBet")
 AddEventHandler("BLACKJACK:CheckPlayerBet", CheckPlayerBet)
 
-function SortPlayers(pTable)
+local function SortPlayers(pTable)
     local temp
 
     for i=1,#pTable-1 do
@@ -237,7 +236,7 @@ end
 
 RegisterServerEvent("BLACKJACK:ReceivedMove")
 
-function StartTableThread(i)
+local function StartTableThread(i)
 	Citizen.CreateThread(function()
 		local index = i
 		-- DebugPrint(index)
@@ -867,7 +866,7 @@ Citizen.CreateThread(function() -- INIT
 	end
 end)
 
-function PlayerSatDown(i, seat)
+local function PlayerSatDown(i, seat)
 	DebugPrint(GetPlayerName(source):upper() .. " SAT DOWN AT TABLE " .. i)
 
 	-- player = source
@@ -907,7 +906,7 @@ RegisterServerEvent("BLACKJACK:PlayerSatDown")
 AddEventHandler('BLACKJACK:PlayerSatDown', PlayerSatDown)
 
 
-function PlayerSatUp(i)
+local function PlayerSatUp(i)
 	DebugPrint(GetPlayerName(source):upper() .. " LEFT TABLE "..i)
 
 	local num = FindPlayerIdx(players[i], source)
@@ -925,7 +924,7 @@ end
 RegisterServerEvent("BLACKJACK:PlayerSatUp")
 AddEventHandler('BLACKJACK:PlayerSatUp', PlayerSatUp)
 
-function PlayerLeft()
+local function PlayerLeft()
 	local playerTbl = tableTracker[tostring(source)]
 
 	if playerTbl ~= nil then
@@ -944,7 +943,7 @@ end
 
 AddEventHandler("playerDropped", PlayerLeft)
 
-function PlayerRemove(i)
+local function PlayerRemove(i)
 	DebugPrint(GetPlayerName(source):upper() .. " LEFT TABLE "..i)
 
 	local num = FindPlayerIdx(players[i], source)
